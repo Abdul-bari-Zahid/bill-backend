@@ -52,12 +52,12 @@ Return ONLY JSON format:
     });
 
     res.json({
-      message: "Bill optimization suggestion generated ✅",
+      message: "Bill optimization suggestion generated",
       bill: newBill
     });
   } catch (err) {
-    console.error("❌ Bill suggestion route error:", err);
-    res.status(500).json({ error: "Server error ❌" });
+    console.error("Bill suggestion route error:", err);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
@@ -66,7 +66,7 @@ router.get("/", auth, async (req, res) => {
     const userBills = await CustomBill.find({ userId: req.user.id }).sort({ createdAt: -1 });
     res.json(userBills);
   } catch (err) {
-    res.status(500).json({ error: "Server error ❌" });
+    res.status(500).json({ error: "Server error" });
   }
 });
 

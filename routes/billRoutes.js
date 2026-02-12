@@ -46,15 +46,15 @@ router.post("/upload", auth, upload.single("file"), async (req, res) => {
       graphData: aiData?.graphData || null,
     });
 
-    console.log("✅ Bill created successfully:");
+    console.log("Bill created successfully:");
     console.log("- ID:", bill._id);
     console.log("- Type:", bill.billType);
     console.log("- Amount:", bill.totalAmount);
-    console.log("- AI Data:", aiData ? "✅ Present" : "❌ Null");
+    console.log("- AI Data:", aiData ? "Present" : "Null");
 
-    res.json({ msg: "Bill Analyzed ✅", bill });
+    res.json({ msg: "Bill Analyzed", bill });
   } catch (err) {
-    console.error("❌ Upload error:", err);
+    console.error("Upload error:", err);
     if (err.name === "ValidationError") {
       console.error("Mongoose Validation Error:", JSON.stringify(err.errors, null, 2));
       return res.status(400).json({ error: "Invalid data extracted from bill" });
@@ -69,7 +69,7 @@ router.get("/user", auth, async (req, res) => {
     const bills = await Bill.find({ userId: req.user.id }).sort({ createdAt: -1 });
     res.json(bills);
   } catch (err) {
-    console.error("❌ Fetch user bills error:", err);
+    console.error("Fetch user bills error:", err);
     res.status(500).json({ error: "Failed to fetch bills" });
   }
 });

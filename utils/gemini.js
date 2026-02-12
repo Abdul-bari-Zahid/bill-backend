@@ -21,19 +21,19 @@ const MODEL_NAME = "gemini-2.5-flash";
 
 async function generateWithRetry(model, prompt, isImage = false, buffer = null, mimetype = null) {
   let retries = 3;
-  console.log("🔄 generateWithRetry - isImage:", isImage);
+  console.log("generateWithRetry - isImage:", isImage);
 
   while (retries > 0) {
     try {
       const parts = isImage ? [{ text: prompt }, { inlineData: { data: buffer.toString("base64"), mimeType: mimetype } }] : prompt;
-      console.log("📤 Sending request to Gemini...");
+      console.log("Sending request to Gemini...");
 
       const result = await model.generateContent(parts);
-      console.log("📥 Result object keys:", Object.keys(result));
+      console.log("Result object keys:", Object.keys(result));
 
       const response = result.response;
-      console.log("📥 Response object keys:", Object.keys(response));
-      console.log("📥 Response candidates:", response.candidates?.length);
+      console.log("Response object keys:", Object.keys(response));
+      console.log("Response candidates:", response.candidates?.length);
 
       // Try to get text from response
       let text = "";
@@ -44,21 +44,21 @@ async function generateWithRetry(model, prompt, isImage = false, buffer = null, 
           text = response.candidates[0].content.parts[0].text;
         }
       } catch (e) {
-        console.log("⚠️ Error extracting text:", e.message);
+        console.log("Error extracting text:", e.message);
       }
 
-      console.log("✅ Response text length:", text?.length);
+      console.log(" Response text length:", text?.length);
       if (text && text.length > 0) {
-        console.log("📝 First 200 chars:", text.substring(0, 200));
+        console.log("First 200 chars:", text.substring(0, 200));
         return text;
       } else {
-        console.log("❌ Empty response, full response:", JSON.stringify(response, null, 2));
+        console.log("Empty response, full response:", JSON.stringify(response, null, 2));
         return null;
       }
     } catch (err) {
-      console.log("❌ Error in generateWithRetry:", err.message);
+      console.log("Error in generateWithRetry:", err.message);
       if (err.message.includes("429") && retries > 1) {
-        console.log(`⏳ Rate limited. Retrying in 2s... (${retries - 1} left)`);
+        console.log(`Rate limited. Retrying in 2s... (${retries - 1} left)`);
         await new Promise(resolve => setTimeout(resolve, 2000));
         retries--;
       } else {
@@ -69,7 +69,7 @@ async function generateWithRetry(model, prompt, isImage = false, buffer = null, 
   return null;
 }
 
-// 🧾 BILL TEXT AI
+//  BILL TEXT AI
 export async function analyzeBillText(text) {
   try {
     if (!genAI) throw new Error("GenAI client not initialized.");
@@ -110,24 +110,24 @@ ${text}
   }
 }
 
-// 🖼️ BILL IMAGE AI
+// BILL IMAGE AI
 export async function analyzeBillImage(buffer, mimetype) {
   try {
-    console.log("📸 analyzeBillImage called");
+    console.log("analyzeBillImage called");
     console.log("- Buffer size:", buffer?.length, "bytes");
     console.log("- Mimetype:", mimetype);
 
     if (!buffer || buffer.length < 100) {
-      console.log("❌ Buffer too small or missing");
+      console.log(" Buffer too small or missing");
       return null;
     }
 
     if (!genAI) {
-      console.log("❌ GenAI client not initialized");
+      console.log(" GenAI client not initialized");
       throw new Error("GenAI client not initialized.");
     }
 
-    console.log("✅ Creating model:", MODEL_NAME);
+    console.log(" Creating model:", MODEL_NAME);
     const model = genAI.getGenerativeModel({ model: MODEL_NAME }, { apiVersion: "v1beta" });
 
     const prompt = `Analyze this bill image and extract the following information in JSON format:
@@ -144,32 +144,32 @@ export async function analyzeBillImage(buffer, mimetype) {
 
 Extract the total amount, bill type, date, and all charges/taxes. Return ONLY valid JSON.`;
 
-    console.log("🚀 Calling Gemini API...");
+    console.log("Calling Gemini API...");
     const resultText = await generateWithRetry(model, prompt, true, buffer, mimetype);
-    console.log("✅ API Response received, length:", resultText?.length);
+    console.log("API Response received, length:", resultText?.length);
 
     if (resultText && resultText.length > 0) {
       const jsonStr = resultText.match(/\{[\s\S]*\}/)?.[0];
       if (jsonStr) {
         const parsed = JSON.parse(jsonStr);
-        console.log("✅ JSON parsed successfully");
-        console.log("📊 Total amount:", parsed.totalAmount);
+        console.log("JSON parsed successfully");
+        console.log("Total amount:", parsed.totalAmount);
         return parsed;
       }
-      console.log("⚠️ No JSON found in response");
+      console.log("No JSON found in response");
       return null;
     }
 
-    console.log("❌ No result text from API");
+    console.log("No result text from API");
     return null;
   } catch (err) {
     logError("Bill Image AI error", err);
-    console.log("❌ Full error:", err.message);
+    console.log("Full error:", err.message);
     return null;
   }
 }
 
-// 🔮 GENERAL AI TASK
+// GENERAL AI TASK
 export async function analyzeWithGemini(prompt) {
   try {
     if (!genAI) throw new Error("GenAI client not initialized.");
